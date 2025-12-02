@@ -151,10 +151,29 @@ int main(int argc, char * argv[])
   // 3. (Removed Star)
 
   // Lights
-  auto point_light = std::make_shared<PointLight>();
-  point_light->p = Eigen::Vector3d(0, 9, 0); // Single light on top
-  point_light->I = Eigen::Vector3d(1.5, 1.5, 1.5);
-  lights.push_back(point_light);
+  // Four corners near the ceiling (y=9)
+  // Box bounds: x=[-8, 8], z=[-12, 25]
+  // We place them slightly inside
+  
+  auto light_bl = std::make_shared<PointLight>();
+  light_bl->p = Eigen::Vector3d(-7, 9, -11); // Back Left
+  light_bl->I = Eigen::Vector3d(0.8, 0.8, 0.8);
+  lights.push_back(light_bl);
+
+  auto light_br = std::make_shared<PointLight>();
+  light_br->p = Eigen::Vector3d(7, 9, -11); // Back Right
+  light_br->I = Eigen::Vector3d(0.8, 0.8, 0.8);
+  lights.push_back(light_br);
+
+  auto light_fl = std::make_shared<PointLight>();
+  light_fl->p = Eigen::Vector3d(-7, 9, 24); // Front Left
+  light_fl->I = Eigen::Vector3d(0.8, 0.8, 0.8);
+  lights.push_back(light_fl);
+
+  auto light_fr = std::make_shared<PointLight>();
+  light_fr->p = Eigen::Vector3d(7, 9, 24); // Front Right
+  light_fr->I = Eigen::Vector3d(0.8, 0.8, 0.8);
+  lights.push_back(light_fr);
 
 
   std::vector<unsigned char> rgb_image(3*width*height);
