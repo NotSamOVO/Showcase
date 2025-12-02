@@ -45,20 +45,7 @@ int main(int argc, char * argv[])
   std::vector< std::shared_ptr<Object> > objects;
   std::vector< std::shared_ptr<Light> > lights;
 
-  // 1. Checkerboard Floor
-  auto floor = std::make_shared<Plane>();
-  floor->point = Eigen::Vector3d(0, -1, 0);
-  floor->normal = Eigen::Vector3d(0, 1, 0);
-  floor->material = std::make_shared<Material>();
-  floor->material->ka = Eigen::Vector3d(0.1, 0.1, 0.1);
-  floor->material->kd = Eigen::Vector3d(0.5, 0.5, 0.5); // Will be overridden by checkerboard
-  floor->material->ks = Eigen::Vector3d(0.1, 0.1, 0.1);
-  floor->material->km = Eigen::Vector3d(0.2, 0.2, 0.2); // Slight reflection
-  floor->material->phong_exponent = 10;
-  floor->material->is_checkerboard = true;
-  objects.push_back(floor);
-
-  // 1b. Mirror Box Walls & Ceiling
+  // 1. Mirror Floor
   auto mirror_mat = std::make_shared<Material>();
   mirror_mat->ka = Eigen::Vector3d(0.0, 0.0, 0.0);
   mirror_mat->kd = Eigen::Vector3d(0.1, 0.1, 0.1);
@@ -66,6 +53,13 @@ int main(int argc, char * argv[])
   mirror_mat->km = Eigen::Vector3d(0.9, 0.9, 0.9); // Highly reflective
   mirror_mat->phong_exponent = 1000;
 
+  auto floor = std::make_shared<Plane>();
+  floor->point = Eigen::Vector3d(0, -1, 0);
+  floor->normal = Eigen::Vector3d(0, 1, 0);
+  floor->material = mirror_mat;
+  objects.push_back(floor);
+
+  // 1b. Mirror Box Walls & Ceiling
   auto back_wall = std::make_shared<Plane>();
   back_wall->point = Eigen::Vector3d(0, 0, -12);
   back_wall->normal = Eigen::Vector3d(0, 0, 1);
@@ -96,99 +90,51 @@ int main(int argc, char * argv[])
   ceiling->material = mirror_mat;
   objects.push_back(ceiling);
 
-  // 2. Base Sphere (Marble)
-  auto base_sphere = std::make_shared<Sphere>();
-  base_sphere->center = Eigen::Vector3d(0, 0.5, 0); // y = -1 (floor) + 1.5 (radius)
-  base_sphere->radius = 1.5;
-  base_sphere->material = std::make_shared<Material>();
-  base_sphere->material->ka = Eigen::Vector3d(0.1, 0.0, 0.1);
-  base_sphere->material->kd = Eigen::Vector3d(0.8, 0.2, 0.8); // Purple base
-  base_sphere->material->ks = Eigen::Vector3d(0.2, 0.2, 0.2);
-  base_sphere->material->km = Eigen::Vector3d(0.1, 0.1, 0.1);
-  base_sphere->material->phong_exponent = 50;
-  base_sphere->material->is_noise = true;
-  objects.push_back(base_sphere);
+  // 2. Christmas Tree Pile (Green Spheres)
+  auto green_mat = std::make_shared<Material>();
+  green_mat->ka = Eigen::Vector3d(0.0, 0.1, 0.0);
+  green_mat->kd = Eigen::Vector3d(0.1, 0.6, 0.1); // Green
+  green_mat->ks = Eigen::Vector3d(0.3, 0.3, 0.3);
+  green_mat->km = Eigen::Vector3d(0.1, 0.1, 0.1); // Slight reflection
+  green_mat->phong_exponent = 50;
 
-  // 3. Middle Sphere (Gold)
-  auto middle_sphere = std::make_shared<Sphere>();
-  middle_sphere->center = Eigen::Vector3d(0, 2.9, 0); // y = 0.5 (base center) + 1.5 (base radius) + 0.9 (radius)
-  middle_sphere->radius = 0.9;
-  middle_sphere->material = std::make_shared<Material>();
-  middle_sphere->material->ka = Eigen::Vector3d(0.1, 0.1, 0.0);
-  middle_sphere->material->kd = Eigen::Vector3d(0.2, 0.2, 0.0);
-  middle_sphere->material->ks = Eigen::Vector3d(0.8, 0.7, 0.2); // Gold specular
-  middle_sphere->material->km = Eigen::Vector3d(0.1, 0.1, 0.1);
-  middle_sphere->material->phong_exponent = 200;
-  objects.push_back(middle_sphere);
+  double r = 0.6;
+  int levels = 5;
+  double y_start = -1.0 + r; // Floor is at -1.0
 
-  // 4. Top Sphere (Mirror)
-  auto top_sphere = std::make_shared<Sphere>();
-  top_sphere->center = Eigen::Vector3d(0, 4.4, 0); // y = 2.9 (mid center) + 0.9 (mid radius) + 0.6 (radius)
-  top_sphere->radius = 0.6;
-  top_sphere->material = std::make_shared<Material>();
-  top_sphere->material->ka = Eigen::Vector3d(0.0, 0.0, 0.0);
-  top_sphere->material->kd = Eigen::Vector3d(0.1, 0.1, 0.1);
-  top_sphere->material->ks = Eigen::Vector3d(0.8, 0.8, 0.8);
-  top_sphere->material->km = Eigen::Vector3d(0.9, 0.9, 0.9); // Highly reflective
-  top_sphere->material->phong_exponent = 1000;
-  objects.push_back(top_sphere);
-
-  // 6. Ring of larger red spheres
-  int num_ring_spheres = 8;
-  double ring_radius = 4.5;
-  for(int i = 0; i < num_ring_spheres; ++i) {
-      double angle = 2.0 * 3.14159 * i / num_ring_spheres;
-      auto ring_sphere = std::make_shared<Sphere>();
-      // Floor is at -1.0. Radius is 0.8. Center y should be -0.2.
-      ring_sphere->center = Eigen::Vector3d(ring_radius * cos(angle), -0.2, ring_radius * sin(angle)); 
-      ring_sphere->radius = 0.8;
-      ring_sphere->material = std::make_shared<Material>();
-      ring_sphere->material->ka = Eigen::Vector3d(0.1, 0.0, 0.0);
-      ring_sphere->material->kd = Eigen::Vector3d(0.2, 0.0, 0.0); // Darker red for metallic look
-      ring_sphere->material->ks = Eigen::Vector3d(0.9, 0.9, 0.9); // Bright specular
-      ring_sphere->material->km = Eigen::Vector3d(0.8, 0.5, 0.5); // Strong reddish reflection
-      ring_sphere->material->phong_exponent = 200;
-      objects.push_back(ring_sphere);
+  for (int l = 0; l < levels; ++l) {
+      int side = levels - l; // 5, 4, 3, 2, 1
+      double y = y_start + l * (r * 1.4); // Stack height (slightly overlapped)
+      double offset = (side - 1) * r; // Center offset
+      
+      for (int x = 0; x < side; ++x) {
+          for (int z = 0; z < side; ++z) {
+              auto sphere = std::make_shared<Sphere>();
+              sphere->radius = r;
+              sphere->center = Eigen::Vector3d(
+                  (x * 2 * r) - offset,
+                  y,
+                  (z * 2 * r) - offset
+              );
+              sphere->material = green_mat;
+              objects.push_back(sphere);
+          }
+      }
   }
 
-  // 7. Scattered Metallic Pebbles
-  std::vector<Eigen::Vector3d> pebble_pos = {
-      Eigen::Vector3d(-3.5, -0.8, 2.0),
-      Eigen::Vector3d(3.5, -0.8, -1.0),
-      Eigen::Vector3d(-1.0, -0.8, 4.0),
-      Eigen::Vector3d(2.5, -0.8, 3.0)
-  };
-  
-  for(const auto& pos : pebble_pos) {
-      auto pebble = std::make_shared<Sphere>();
-      pebble->center = pos;
-      pebble->radius = 0.2;
-      pebble->material = std::make_shared<Material>();
-      pebble->material->ka = Eigen::Vector3d(0.1, 0.1, 0.1);
-      pebble->material->kd = Eigen::Vector3d(0.7, 0.7, 0.7); // Silver
-      pebble->material->ks = Eigen::Vector3d(0.9, 0.9, 0.9);
-      pebble->material->km = Eigen::Vector3d(0.5, 0.5, 0.5);
-      pebble->material->phong_exponent = 100;
-      objects.push_back(pebble);
-  }
+  // 3. Star on Top (Gold Sphere)
+  auto gold_mat = std::make_shared<Material>();
+  gold_mat->ka = Eigen::Vector3d(0.1, 0.1, 0.0);
+  gold_mat->kd = Eigen::Vector3d(0.8, 0.6, 0.0); // Gold
+  gold_mat->ks = Eigen::Vector3d(0.9, 0.9, 0.5);
+  gold_mat->km = Eigen::Vector3d(0.2, 0.2, 0.2);
+  gold_mat->phong_exponent = 200;
 
-  // 8. Inner Ring of Blue Spheres (Non-reflective)
-  int num_blue_spheres = 12;
-  double blue_ring_radius = 3.0;
-  for(int i = 0; i < num_blue_spheres; ++i) {
-      double angle = 2.0 * 3.14159 * i / num_blue_spheres;
-      auto blue_sphere = std::make_shared<Sphere>();
-      // Floor is at -1.0. Radius is 0.6. Center y should be -0.4.
-      blue_sphere->center = Eigen::Vector3d(blue_ring_radius * cos(angle), -0.4, blue_ring_radius * sin(angle)); 
-      blue_sphere->radius = 0.6;
-      blue_sphere->material = std::make_shared<Material>();
-      blue_sphere->material->ka = Eigen::Vector3d(0.0, 0.0, 0.1);
-      blue_sphere->material->kd = Eigen::Vector3d(0.1, 0.1, 0.9); // Blue
-      blue_sphere->material->ks = Eigen::Vector3d(0.5, 0.5, 0.5); // Moderate specular
-      blue_sphere->material->km = Eigen::Vector3d(0.0, 0.0, 0.0); // No reflection
-      blue_sphere->material->phong_exponent = 50;
-      objects.push_back(blue_sphere);
-  }
+  auto star = std::make_shared<Sphere>();
+  star->radius = 0.5;
+  star->center = Eigen::Vector3d(0, y_start + levels * (r * 1.4) - 0.2, 0);
+  star->material = gold_mat;
+  objects.push_back(star);
 
   // Lights
   auto point_light = std::make_shared<PointLight>();
@@ -231,7 +177,7 @@ int main(int argc, char * argv[])
   // Add overlay text
   std::vector<unsigned char> white = {255, 255, 255};
   std::vector<unsigned char> yellow = {255, 255, 0};
-  draw_text(rgb_image, width, height, "Mirror Box - Closer Sides", 10, 10, white, 2);
+  draw_text(rgb_image, width, height, "Christmas Tree in Mirror Box", 10, 10, white, 2);
   draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
   draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Sam", 10, height - 20, white, 1);
 
