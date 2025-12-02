@@ -191,7 +191,8 @@ int main(int argc, char * argv[])
   // Add overlay text
   std::vector<unsigned char> white = {255, 255, 255};
   std::vector<unsigned char> yellow = {255, 255, 0};
-  draw_text(rgb_image, width, height, "Truffle Pile in Mirror Box", 10, 10, white, 2);
+  std::vector<unsigned char> black = {0, 0, 0};
+  draw_text(rgb_image, width, height, "Truffle Pile in Mirror Box", 10, 10, black, 2);
   draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
   draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Tianle Xu", 10, height - 20, white, 1);
 
