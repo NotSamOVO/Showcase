@@ -22,10 +22,10 @@ int main(int argc, char * argv[])
 {
   // --- SCENE SETUP ---
   Camera camera;
-  camera.e = Eigen::Vector3d(0, 4, 14); // Moved camera up and back
+  camera.e = Eigen::Vector3d(0, 6, 20); // Moved camera further back
   
   // Calculate camera basis vectors
-  Eigen::Vector3d target(0, 2, 0); // Look at the middle of the stack
+  Eigen::Vector3d target(0, 1, 0); // Look at the pile
   Eigen::Vector3d up(0, 1, 0);
   Eigen::Vector3d gaze = (target - camera.e).normalized();
   camera.w = -gaze;
@@ -67,7 +67,7 @@ int main(int argc, char * argv[])
   objects.push_back(back_wall);
 
   auto front_wall = std::make_shared<Plane>();
-  front_wall->point = Eigen::Vector3d(0, 0, 16);
+  front_wall->point = Eigen::Vector3d(0, 0, 25); // Moved front wall behind camera
   front_wall->normal = Eigen::Vector3d(0, 0, -1);
   front_wall->material = mirror_mat;
   objects.push_back(front_wall);
@@ -90,51 +90,65 @@ int main(int argc, char * argv[])
   ceiling->material = mirror_mat;
   objects.push_back(ceiling);
 
-  // 2. Christmas Tree Pile (Green Spheres)
-  auto green_mat = std::make_shared<Material>();
-  green_mat->ka = Eigen::Vector3d(0.0, 0.1, 0.0);
-  green_mat->kd = Eigen::Vector3d(0.1, 0.6, 0.1); // Green
-  green_mat->ks = Eigen::Vector3d(0.3, 0.3, 0.3);
-  green_mat->km = Eigen::Vector3d(0.1, 0.1, 0.1); // Slight reflection
-  green_mat->phong_exponent = 50;
+  // 2. Truffle Pile
+  // Materials
+  auto dark_choc = std::make_shared<Material>();
+  dark_choc->ka = Eigen::Vector3d(0.05, 0.02, 0.01);
+  dark_choc->kd = Eigen::Vector3d(0.2, 0.1, 0.05); // Dark Brown
+  dark_choc->ks = Eigen::Vector3d(0.3, 0.3, 0.3);
+  dark_choc->km = Eigen::Vector3d(0.05, 0.05, 0.05);
+  dark_choc->phong_exponent = 60;
 
-  double r = 0.6;
+  auto cocoa_dusted = std::make_shared<Material>();
+  cocoa_dusted->ka = Eigen::Vector3d(0.1, 0.05, 0.02);
+  cocoa_dusted->kd = Eigen::Vector3d(0.5, 0.3, 0.15); // Light Brown
+  cocoa_dusted->ks = Eigen::Vector3d(0.0, 0.0, 0.0); // Matte
+  cocoa_dusted->km = Eigen::Vector3d(0.0, 0.0, 0.0);
+  cocoa_dusted->phong_exponent = 1;
+  cocoa_dusted->is_noise = true; // Texture
+
+  auto milk_choc = std::make_shared<Material>();
+  milk_choc->ka = Eigen::Vector3d(0.05, 0.03, 0.01);
+  milk_choc->kd = Eigen::Vector3d(0.4, 0.2, 0.1); // Medium Brown
+  milk_choc->ks = Eigen::Vector3d(0.1, 0.1, 0.1);
+  milk_choc->km = Eigen::Vector3d(0.02, 0.02, 0.02);
+  milk_choc->phong_exponent = 30;
+
+  std::vector<std::shared_ptr<Material>> truffle_mats = {dark_choc, cocoa_dusted, milk_choc};
+
+  double r = 0.7;
   int levels = 5;
   double y_start = -1.0 + r; // Floor is at -1.0
 
+  // Random generator for materials and slight position jitter
+  std::default_random_engine rng;
+  std::uniform_int_distribution<int> mat_dist(0, 2);
+  std::uniform_real_distribution<double> jitter_dist(-0.1, 0.1);
+
   for (int l = 0; l < levels; ++l) {
-      int side = levels - l; // 5, 4, 3, 2, 1
-      double y = y_start + l * (r * 1.4); // Stack height (slightly overlapped)
+      int side = levels - l; 
+      double y = y_start + l * (r * 1.3); // Stack height
       double offset = (side - 1) * r; // Center offset
       
       for (int x = 0; x < side; ++x) {
           for (int z = 0; z < side; ++z) {
+              // Skip corners on larger levels to make it rounder
+              if (l < 2 && (x == 0 || x == side-1) && (z == 0 || z == side-1)) continue;
+
               auto sphere = std::make_shared<Sphere>();
               sphere->radius = r;
               sphere->center = Eigen::Vector3d(
-                  (x * 2 * r) - offset,
-                  y,
-                  (z * 2 * r) - offset
+                  (x * 2 * r) - offset + jitter_dist(rng),
+                  y + jitter_dist(rng) * 0.2,
+                  (z * 2 * r) - offset + jitter_dist(rng)
               );
-              sphere->material = green_mat;
+              sphere->material = truffle_mats[mat_dist(rng)];
               objects.push_back(sphere);
           }
       }
   }
 
-  // 3. Star on Top (Gold Sphere)
-  auto gold_mat = std::make_shared<Material>();
-  gold_mat->ka = Eigen::Vector3d(0.1, 0.1, 0.0);
-  gold_mat->kd = Eigen::Vector3d(0.8, 0.6, 0.0); // Gold
-  gold_mat->ks = Eigen::Vector3d(0.9, 0.9, 0.5);
-  gold_mat->km = Eigen::Vector3d(0.2, 0.2, 0.2);
-  gold_mat->phong_exponent = 200;
-
-  auto star = std::make_shared<Sphere>();
-  star->radius = 0.5;
-  star->center = Eigen::Vector3d(0, y_start + levels * (r * 1.4) - 0.2, 0);
-  star->material = gold_mat;
-  objects.push_back(star);
+  // 3. (Removed Star)
 
   // Lights
   auto point_light = std::make_shared<PointLight>();
@@ -177,7 +191,7 @@ int main(int argc, char * argv[])
   // Add overlay text
   std::vector<unsigned char> white = {255, 255, 255};
   std::vector<unsigned char> yellow = {255, 255, 0};
-  draw_text(rgb_image, width, height, "Christmas Tree in Mirror Box", 10, 10, white, 2);
+  draw_text(rgb_image, width, height, "Truffle Pile in Mirror Box", 10, 10, white, 2);
   draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
   draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Sam", 10, height - 20, white, 1);
 
