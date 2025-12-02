@@ -58,6 +58,44 @@ int main(int argc, char * argv[])
   floor->material->is_checkerboard = true;
   objects.push_back(floor);
 
+  // 1b. Mirror Box Walls & Ceiling
+  auto mirror_mat = std::make_shared<Material>();
+  mirror_mat->ka = Eigen::Vector3d(0.0, 0.0, 0.0);
+  mirror_mat->kd = Eigen::Vector3d(0.1, 0.1, 0.1);
+  mirror_mat->ks = Eigen::Vector3d(0.8, 0.8, 0.8);
+  mirror_mat->km = Eigen::Vector3d(0.9, 0.9, 0.9); // Highly reflective
+  mirror_mat->phong_exponent = 1000;
+
+  auto back_wall = std::make_shared<Plane>();
+  back_wall->point = Eigen::Vector3d(0, 0, -12);
+  back_wall->normal = Eigen::Vector3d(0, 0, 1);
+  back_wall->material = mirror_mat;
+  objects.push_back(back_wall);
+
+  auto front_wall = std::make_shared<Plane>();
+  front_wall->point = Eigen::Vector3d(0, 0, 16);
+  front_wall->normal = Eigen::Vector3d(0, 0, -1);
+  front_wall->material = mirror_mat;
+  objects.push_back(front_wall);
+
+  auto left_wall = std::make_shared<Plane>();
+  left_wall->point = Eigen::Vector3d(-12, 0, 0);
+  left_wall->normal = Eigen::Vector3d(1, 0, 0);
+  left_wall->material = mirror_mat;
+  objects.push_back(left_wall);
+
+  auto right_wall = std::make_shared<Plane>();
+  right_wall->point = Eigen::Vector3d(12, 0, 0);
+  right_wall->normal = Eigen::Vector3d(-1, 0, 0);
+  right_wall->material = mirror_mat;
+  objects.push_back(right_wall);
+
+  auto ceiling = std::make_shared<Plane>();
+  ceiling->point = Eigen::Vector3d(0, 10, 0);
+  ceiling->normal = Eigen::Vector3d(0, -1, 0);
+  ceiling->material = mirror_mat;
+  objects.push_back(ceiling);
+
   // 2. Base Sphere (Marble)
   auto base_sphere = std::make_shared<Sphere>();
   base_sphere->center = Eigen::Vector3d(0, 0.5, 0); // y = -1 (floor) + 1.5 (radius)
@@ -154,19 +192,9 @@ int main(int argc, char * argv[])
 
   // Lights
   auto point_light = std::make_shared<PointLight>();
-  point_light->p = Eigen::Vector3d(3, 5, 5);
-  point_light->I = Eigen::Vector3d(1.0, 1.0, 1.0);
+  point_light->p = Eigen::Vector3d(0, 6, 10); // Single light in front
+  point_light->I = Eigen::Vector3d(1.5, 1.5, 1.5);
   lights.push_back(point_light);
-
-  auto point_light2 = std::make_shared<PointLight>();
-  point_light2->p = Eigen::Vector3d(-3, 5, 5);
-  point_light2->I = Eigen::Vector3d(0.5, 0.5, 1.0); // Blueish light
-  lights.push_back(point_light2);
-
-  auto dir_light = std::make_shared<DirectionalLight>();
-  dir_light->d = Eigen::Vector3d(-1, -1, -1).normalized();
-  dir_light->I = Eigen::Vector3d(0.2, 0.2, 0.2);
-  lights.push_back(dir_light);
 
 
   std::vector<unsigned char> rgb_image(3*width*height);
@@ -203,9 +231,9 @@ int main(int argc, char * argv[])
   // Add overlay text
   std::vector<unsigned char> white = {255, 255, 255};
   std::vector<unsigned char> yellow = {255, 255, 0};
-  draw_text(rgb_image, width, height, "Reflective Red & Matte Blue Rings", 10, 10, white, 2);
-  draw_text(rgb_image, width, height, "Procedural Noise & Reflections", 10, 30, yellow, 1);
-  draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Tianle Xu(Sam)", 10, height - 20, white, 1);
+  draw_text(rgb_image, width, height, "Mirror Box - Single Front Light", 10, 10, white, 2);
+  draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
+  draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Sam", 10, height - 20, white, 1);
 
   write_ppm("piece.ppm",rgb_image,width,height,3);
 }
