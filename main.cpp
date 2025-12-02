@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
 
   // Lights
   auto point_light = std::make_shared<PointLight>();
-  point_light->p = Eigen::Vector3d(0, 9, 0); // Single light on top
+  point_light->p = Eigen::Vector3d(0, 9, 10); // Single light on top front
   point_light->I = Eigen::Vector3d(1.5, 1.5, 1.5);
   lights.push_back(point_light);
 
