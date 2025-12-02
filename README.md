@@ -1,9 +1,9 @@
 # Advanced Ray Tracing Showcase
 
 ## Personal Information
-*   **Full Name:** [Your Full Name]
-*   **UtorID:** [Your UtorID]
-*   **Student Number:** [Your Student Number]
+*   **Full Name:** Tianle Xu
+*   **UtorID:** xutianl3
+*   **Student Number:** 1009824727
 *   **Assignment Augmented:** A3 (Ray Tracing)
 
 ## Instructions
