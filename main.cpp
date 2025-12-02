@@ -79,13 +79,13 @@ int main(int argc, char * argv[])
   objects.push_back(front_wall);
 
   auto left_wall = std::make_shared<Plane>();
-  left_wall->point = Eigen::Vector3d(-12, 0, 0);
+  left_wall->point = Eigen::Vector3d(-8, 0, 0);
   left_wall->normal = Eigen::Vector3d(1, 0, 0);
   left_wall->material = mirror_mat;
   objects.push_back(left_wall);
 
   auto right_wall = std::make_shared<Plane>();
-  right_wall->point = Eigen::Vector3d(12, 0, 0);
+  right_wall->point = Eigen::Vector3d(8, 0, 0);
   right_wall->normal = Eigen::Vector3d(-1, 0, 0);
   right_wall->material = mirror_mat;
   objects.push_back(right_wall);
@@ -231,7 +231,7 @@ int main(int argc, char * argv[])
   // Add overlay text
   std::vector<unsigned char> white = {255, 255, 255};
   std::vector<unsigned char> yellow = {255, 255, 0};
-  draw_text(rgb_image, width, height, "Mirror Box - Single Front Light", 10, 10, white, 2);
+  draw_text(rgb_image, width, height, "Mirror Box - Closer Sides", 10, 10, white, 2);
   draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
   draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Sam", 10, height - 20, white, 1);
 
