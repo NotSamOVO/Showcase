@@ -22,7 +22,7 @@ int main(int argc, char * argv[])
 {
   // --- SCENE SETUP ---
   Camera camera;
-  camera.e = Eigen::Vector3d(0, 6, 20); // Moved camera further back
+  camera.e = Eigen::Vector3d(0, 5, 16); // Moved camera closer
   
   // Calculate camera basis vectors
   Eigen::Vector3d target(0, 1, 0); // Look at the pile
@@ -152,7 +152,7 @@ int main(int argc, char * argv[])
 
   // Lights
   auto point_light = std::make_shared<PointLight>();
-  point_light->p = Eigen::Vector3d(0, 6, 10); // Single light in front
+  point_light->p = Eigen::Vector3d(0, 9, 0); // Single light on top
   point_light->I = Eigen::Vector3d(1.5, 1.5, 1.5);
   lights.push_back(point_light);
 
@@ -193,7 +193,7 @@ int main(int argc, char * argv[])
   std::vector<unsigned char> yellow = {255, 255, 0};
   draw_text(rgb_image, width, height, "Truffle Pile in Mirror Box", 10, 10, white, 2);
   draw_text(rgb_image, width, height, "Infinite Reflections", 10, 30, yellow, 1);
-  draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Sam", 10, height - 20, white, 1);
+  draw_text(rgb_image, width, height, "CSC317 Fall 2025 - Tianle Xu", 10, height - 20, white, 1);
 
   write_ppm("piece.ppm",rgb_image,width,height,3);
 }
